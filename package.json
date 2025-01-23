@@ -1,0 +1,27 @@
+{
+  "name": "restart-menu",
+  "version": "0.0.1",
+  "description": "Show EFI boot entries in the GNOME panel",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndfsa/restart-menu.git"
+  },
+  "author": "ndfsa <ndfsa1@proton.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/example/my-extension/issues"
+  },
+  "homepage": "https://github.com/ndfsa/restart-menu#readme",
+  "sideEffects": false,
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "eslint-plugin-jsdoc": "^50.6.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@girs/gjs": "^4.0.0-beta.19",
+    "@girs/gnome-shell": "^47.0.1"
+  }
+}

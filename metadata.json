@@ -1,0 +1,9 @@
+{
+  "name": "Restart Menu (systemd-boot)",
+  "description": "Show EFI boot entries in the GNOME panel",
+  "uuid": "restart-menu@ndfsa.github.io",
+  "url": "https://github.com/ndfsa/restart-menu",
+  "settings-schema": "org.gnome.shell.extensions.restart-menu",
+  "version": 1,
+  "shell-version": ["47"]
+}
