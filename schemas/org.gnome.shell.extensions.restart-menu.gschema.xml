@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.restart-menu" path="/org/gnome/shell/extensions/restart-menu/">
+    <key name="timeout" type="i">
+      <default>60</default>
+      <summary>Reboot timeout</summary>
+      <description>Specifies the duration, in seconds, the system will wait before automatically initiating a reboot</description>
+    </key>
   </schema>
 </schemalist>
