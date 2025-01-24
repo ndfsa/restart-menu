@@ -26,11 +26,10 @@ Gio._promisify(Gio.Subprocess.prototype, "wait_check_async");
 
 export default class MyExtension extends Extension {
   gsettings?: Gio.Settings;
-  animationsEnabled: boolean = true;
   menuItem?: PopupMenu.PopupSubMenuMenuItem;
   selected?: BootEntry;
   timer?: GLib.Source;
-  TIMEOUT: number = 60;
+  timeout: number = 60;
 
   private async getBootEntries(): Promise<BootEntry[]> {
     const proc = Gio.Subprocess.new(
@@ -59,7 +58,7 @@ export default class MyExtension extends Extension {
             this.showConfirmation();
             this.timer = setTimeout(() => {
               this.reboot();
-            }, this.TIMEOUT * 1000);
+            }, this.timeout * 1000);
           });
         });
         Main.panel.statusArea.quickSettings._system?.quickSettingsItems[0].menu.addMenuItem(
@@ -80,7 +79,7 @@ export default class MyExtension extends Extension {
     const dialog = new ModalDialog.ModalDialog({});
     const messageLayout = new Dialog.MessageDialogContent({
       title: `Restart To ${this.selected.title}`,
-      description: `The system will restart automatically in ${this.TIMEOUT} seconds`,
+      description: `The system will restart automatically in ${this.timeout} seconds`,
     });
     dialog.contentLayout.add_child(messageLayout);
 
@@ -99,6 +98,7 @@ export default class MyExtension extends Extension {
         action: () => {
           this.clearTimers();
           this.reboot();
+          dialog.close();
         },
         default: false,
       },
@@ -126,32 +126,32 @@ export default class MyExtension extends Extension {
       ],
       Gio.SubprocessFlags.NONE,
     );
-    await proc.wait_async();
-    if (!proc.get_successful()) {
-      throw new Error(`Failed rebooting to ${this.selected.title}`);
+    try {
+      await proc.wait_async();
+      if (!proc.get_successful()) {
+        throw new Error(`Failed rebooting to ${this.selected.title}`);
+      }
+    } catch (err) {
+      console.debug(err);
     }
   }
 
   enable() {
     this.gsettings = this.getSettings();
-    this.animationsEnabled =
-      this.gsettings!.get_value("timeout").deepUnpack() ?? 60;
+    this.timeout =
+      this.gsettings!.get_value("timeout").deepUnpack() ?? this.timeout;
 
     this.menuItem = new PopupMenu.PopupSubMenuMenuItem(
       this.gettext("Restart To..."),
       false,
     );
-    GLib.idle_add(
-      GLib.PRIORITY_DEFAULT,
-      () => {
-        if (!Main.panel.statusArea.quickSettings._system) {
-          return GLib.SOURCE_CONTINUE;
-        }
-        this.addMenuItem();
-        return GLib.SOURCE_REMOVE;
-      },
-      null,
-    );
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+      if (!Main.panel.statusArea.quickSettings._system) {
+        return GLib.SOURCE_CONTINUE;
+      }
+      this.addMenuItem();
+      return GLib.SOURCE_REMOVE;
+    });
   }
 
   disable() {
