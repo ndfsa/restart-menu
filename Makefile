@@ -8,7 +8,7 @@ all: dist/extension.js
 node_modules: package.json
 	npm install
 
-dist/extension.js: node_modules
+dist/extension.js: node_modules extension.ts
 	tsc
 
 build: dist/extension.js
