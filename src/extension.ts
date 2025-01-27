@@ -2,7 +2,10 @@ import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import Clutter from "gi://Clutter";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import {
+  Extension,
+  gettext as _,
+} from "resource:///org/gnome/shell/extensions/extension.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import * as Dialog from "resource:///org/gnome/shell/ui/dialog.js";
 import * as ModalDialog from "resource:///org/gnome/shell/ui/modalDialog.js";
@@ -56,9 +59,6 @@ export default class MyExtension extends Extension {
           this.menuItem?.menu.addAction(entry.title, () => {
             this.selected = entry;
             this.showConfirmation();
-            this.timer = setTimeout(() => {
-              this.reboot();
-            }, this.timeout * 1000);
           });
         });
         Main.panel.statusArea.quickSettings._system?.quickSettingsItems[0].menu.addMenuItem(
@@ -76,16 +76,31 @@ export default class MyExtension extends Extension {
     if (!this.selected) {
       return;
     }
+    this.timeout =
+      this.gsettings!.get_value("timeout").deepUnpack() ?? this.timeout;
+
+    if (this.timeout === 0) {
+      this.clearTimers();
+      this.reboot();
+      return;
+    }
+
+    this.timer = setTimeout(() => {
+      this.reboot();
+    }, this.timeout * 1000);
+
     const dialog = new ModalDialog.ModalDialog({});
     const messageLayout = new Dialog.MessageDialogContent({
-      title: `Restart To ${this.selected.title}`,
-      description: `The system will restart automatically in ${this.timeout} seconds`,
+      title: _("Restart To %s").format(this.selected.title),
+      description: _(
+        "The system will restart automatically in %d seconds",
+      ).format(this.timeout),
     });
     dialog.contentLayout.add_child(messageLayout);
 
     dialog.setButtons([
       {
-        label: this.gettext("Cancel"),
+        label: _("Cancel"),
         action: () => {
           this.clearTimers();
           dialog.close();
@@ -94,7 +109,7 @@ export default class MyExtension extends Extension {
         default: true,
       },
       {
-        label: this.gettext("Restart"),
+        label: _("Restart"),
         action: () => {
           this.clearTimers();
           this.reboot();
@@ -138,11 +153,9 @@ export default class MyExtension extends Extension {
 
   enable() {
     this.gsettings = this.getSettings();
-    this.timeout =
-      this.gsettings!.get_value("timeout").deepUnpack() ?? this.timeout;
 
     this.menuItem = new PopupMenu.PopupSubMenuMenuItem(
-      this.gettext("Restart To..."),
+      _("Restart To..."),
       false,
     );
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {

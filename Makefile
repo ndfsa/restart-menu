@@ -1,28 +1,24 @@
-NAME=restart-menu
-UUID=$(NAME)@ndfsa.github.io
+UUID=restart-menu@ndfsa.github.io
 
 .PHONY: all pack install clean
 
-all: dist/extension.js
+all: compile
 
 node_modules: package.json
-	npm install
+	@npm install
 
-dist/extension.js: node_modules extension.ts
-	tsc
+compile: node_modules src/*.ts
+	@tsc
 
-build: dist/extension.js
+build: compile
 	@cp -r schemas dist/
 	@cp metadata.json dist/
 
 pack: build
-	@(cd dist && gnome-extensions pack -f \
-		--schema=./schemas/org.gnome.shell.extensions.restart-menu.gschema.xml \
-		-o ../)
-
+	@(cd dist && gnome-extensions pack -f)
 
 install: pack
-	gnome-extensions install -f $(UUID).shell-extension.zip
+	@gnome-extensions install -f dist/$(UUID).shell-extension.zip
 
 clean:
-	@rm -rf dist node_modules $(UUID).shell-extension.zip schemas/gschemas.compiled
+	@rm -rf dist node_modules

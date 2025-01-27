@@ -4,6 +4,7 @@
   "uuid": "restart-menu@ndfsa.github.io",
   "url": "https://github.com/ndfsa/restart-menu",
   "settings-schema": "org.gnome.shell.extensions.restart-menu",
+  "gettext-domain": "restart-menu@ndfsa.github.io",
   "version": 1,
   "shell-version": ["47"]
 }
