@@ -13,3 +13,8 @@ make pack
 ```sh
 make install
 ```
+
+# Acknowledgments
+
+- [Restart To](https://github.com/tiagoporsch/restartto)
+- [Reboot To UEFI](https://github.com/UbayGD/reboottouefi)

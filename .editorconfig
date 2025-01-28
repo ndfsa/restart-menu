@@ -6,6 +6,7 @@ end_of_line = lf
 indent_style = space
 insert_final_newline = true
 tab_width = 2
+max_line_length = 99
 trim_trailing_whitespace = true
 
 [Makefile]
@@ -14,4 +15,5 @@ end_of_line = lf
 indent_style = tab
 insert_final_newline = true
 tab_width = 2
+max_line_length = 99
 trim_trailing_whitespace = true
