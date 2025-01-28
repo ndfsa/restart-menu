@@ -80,27 +80,27 @@ export default class MyExtension extends Extension {
 
     this.startRebootTimer(timeout);
 
-    const dialog = this.createConfirmationDialog(timeout);
-    dialog.open();
+    this.createConfirmationDialog(timeout);
+    this.activeDialog?.open();
   }
 
   private createConfirmationDialog(timeout: number) {
-    const dialog = new ModalDialog.ModalDialog({});
-    this.activeDialog = dialog;
+    this.activeDialog = new ModalDialog.ModalDialog({});
 
-    dialog.contentLayout.add_child(
+    this.activeDialog.contentLayout.add_child(
       new Dialog.MessageDialogContent({
         title: _("Restart To %s").format(this.selectedEntry?.title),
         description: _("The system will restart automatically in %d seconds").format(timeout),
       }),
     );
 
-    dialog.setButtons([
+    this.activeDialog.setButtons([
       {
         label: _("Cancel"),
         action: () => {
           this.clearTimers();
-          dialog.close();
+          this.activeDialog?.close();
+          this.activeDialog = undefined;
         },
         key: Clutter.KEY_Escape,
         default: false,
@@ -110,22 +110,22 @@ export default class MyExtension extends Extension {
         action: () => {
           this.clearTimers();
           this.initiateReboot();
-          dialog.close();
+          this.activeDialog?.close();
+          this.activeDialog = undefined;
         },
         default: false,
       },
     ]);
-    return dialog;
   }
 
   private startRebootTimer(timeout: number) {
     this.clearTimers();
-    this.rebootTimer = setTimeout(async () => {
+    this.rebootTimer = setTimeout(() => {
       if (this.activeDialog) {
         this.activeDialog.close();
         this.activeDialog = undefined;
       }
-      await this.initiateReboot()
+      this.initiateReboot();
     }, timeout * 1000);
   }
 
@@ -139,11 +139,7 @@ export default class MyExtension extends Extension {
   private async initiateReboot() {
     if (!this.selectedEntry || this.cancellable.is_cancelled()) return;
 
-    const command = [
-      "systemctl",
-      "reboot",
-      `--boot-loader-entry=${this.selectedEntry.id}`,
-    ];
+    const command = ["systemctl", "reboot", `--boot-loader-entry=${this.selectedEntry.id}`];
     const flags = Gio.SubprocessFlags.NONE;
 
     try {
@@ -175,5 +171,9 @@ export default class MyExtension extends Extension {
     this.bootMenu?.destroy();
     this.bootMenu = undefined;
     this.selectedEntry = undefined;
+    if (this.activeDialog) {
+      this.activeDialog.close();
+      this.activeDialog = undefined;
+    }
   }
 }
