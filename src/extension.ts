@@ -22,7 +22,7 @@ export default class MyExtension extends Extension {
   private selectedEntry?: BootEntry;
   private rebootTimer?: GLib.Source;
   private defaultTimeout: number = 60;
-  private cancellable = new Gio.Cancellable();
+  private cancellable?: Gio.Cancellable;
   private activeDialog?: ModalDialog.ModalDialog;
 
   private async fetchBootEntries(): Promise<BootEntry[]> {
@@ -32,7 +32,7 @@ export default class MyExtension extends Extension {
     const process = Gio.Subprocess.new(command, flags);
     const [stdout, stderr] = await process.communicate_utf8_async(null, null);
 
-    if (this.cancellable.is_cancelled()) return [];
+    if (this.cancellable?.is_cancelled()) return [];
 
     if (!process.get_successful()) {
       throw new Error(stderr);
@@ -44,7 +44,7 @@ export default class MyExtension extends Extension {
   private async populateBootMenu() {
     try {
       const entries = await this.fetchBootEntries();
-      if (this.cancellable.is_cancelled()) return;
+      if (this.cancellable?.is_cancelled()) return;
 
       const notSelectedEntries = entries.filter((entry) => !entry.isSelected);
       for (const entry of notSelectedEntries) {
@@ -68,7 +68,7 @@ export default class MyExtension extends Extension {
   }
 
   private async handleEntrySelection() {
-    if (!this.selectedEntry || this.cancellable.is_cancelled()) return;
+    if (!this.selectedEntry || this.cancellable?.is_cancelled()) return;
 
     const timeout: number =
       this.settings?.get_value("timeout").deepUnpack() ?? this.defaultTimeout;
@@ -137,7 +137,7 @@ export default class MyExtension extends Extension {
   }
 
   private async initiateReboot() {
-    if (!this.selectedEntry || this.cancellable.is_cancelled()) return;
+    if (!this.selectedEntry || this.cancellable?.is_cancelled()) return;
 
     const command = ["systemctl", "reboot", `--boot-loader-entry=${this.selectedEntry.id}`];
     const flags = Gio.SubprocessFlags.NONE;
@@ -153,6 +153,7 @@ export default class MyExtension extends Extension {
   enable() {
     this.settings = this.getSettings();
     this.bootMenu = new PopupMenu.PopupSubMenuMenuItem(_("Restart To..."), false);
+    this.cancellable = new Gio.Cancellable();
 
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
       if (Main.panel.statusArea.quickSettings._system) {
@@ -165,7 +166,7 @@ export default class MyExtension extends Extension {
 
   disable() {
     this.clearTimers();
-    this.cancellable.cancel();
+    this.cancellable?.cancel();
 
     this.settings = undefined;
     this.bootMenu?.destroy();
@@ -175,5 +176,6 @@ export default class MyExtension extends Extension {
       this.activeDialog.close();
       this.activeDialog = undefined;
     }
+    this.cancellable = undefined;
   }
 }
