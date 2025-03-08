@@ -89,7 +89,7 @@ export default class MyExtension extends Extension {
 
     this.activeDialog.contentLayout.add_child(
       new Dialog.MessageDialogContent({
-        title: _("Restart To %s").format(this.selectedEntry?.title),
+        title: _("Restarting, using boot entry: \"%s\"").format(this.selectedEntry?.title),
         description: _("The system will restart automatically in %d seconds").format(timeout),
       }),
     );
@@ -152,7 +152,7 @@ export default class MyExtension extends Extension {
 
   enable() {
     this.settings = this.getSettings();
-    this.bootMenu = new PopupMenu.PopupSubMenuMenuItem(_("Restart To..."), false);
+    this.bootMenu = new PopupMenu.PopupSubMenuMenuItem(_("Choose boot entry..."), false);
     this.cancellable = new Gio.Cancellable();
 
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
